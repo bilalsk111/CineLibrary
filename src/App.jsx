@@ -14,11 +14,13 @@ import Trailer from "./components/partials/Trailer";
 import NotFound from "./components/NotFound";
 import About from "./components/About";
 import ContactUs from "./components/ContactUs";
+import ReptileCursor from "./components/ReptileCursor";
 
 
 function App(){
   return(
     <div className="bg-[#1F1E24] flex w-full h-full">
+      <ReptileCursor />
       <Routes>
         <Route path="/" element={<Home/>}/>
         <Route path="/trending" element={<Trending/>}/>
