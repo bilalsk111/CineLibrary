@@ -5,7 +5,7 @@ import Topnav from "./partials/Topnav";
 import Dropdown from "./partials/Dropdown";
 import Cards from "./partials/Cards";
 import React,{ useEffect, useState } from "react";
-import Loader from "../components/partials/Loader";
+import Loader from "./partials/Loader";
 const Popular = () => {
   document.title = "CineLibrary | Popular";
 
