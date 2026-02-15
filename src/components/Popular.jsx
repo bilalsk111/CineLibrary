@@ -4,8 +4,8 @@ import axios from "../utils/axios";
 import Topnav from "./partials/Topnav";
 import Dropdown from "./partials/Dropdown";
 import Cards from "./partials/Cards";
-import Loader from "./partials/loader";
 import React,{ useEffect, useState } from "react";
+import Loader from "./partials/loader";
 const Popular = () => {
   document.title = "CineLibrary | Popular";
 
