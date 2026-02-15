@@ -1,95 +1,107 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Topnav from "./partials/Topnav";
-import Dropdown from "./partials/Dropdown";
 import axios from "../utils/axios";
+import React, { useEffect, useState } from "react";
+import Loader from "../components/partials/Loader";
 import Cards from "./partials/Cards";
-import Loading from "./Loading";
-import InfiniteScroll from 'react-infinite-scroll-component';
+import Topnav from "./partials/Topnav";
+import { useNavigate } from "react-router-dom";
+import Dropdown from "./partials/Dropdown";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const Movies = () => {
-  document.title = "SCSDB | Movies";
+  document.title = "CineLibrary | Movies";
 
   const navigate = useNavigate();
-  const [category, setcategory] = useState("now_playing");
-  const [movie, setmovie] = useState([]);
-  const [page, setpage] = useState(1);
-  const [hasMore, sethasMore] = useState(true);
 
-  const GetMovie = async () => {
+  const [category, setCategory] = useState("now_playing");
+  const [movies, setMovies] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const GetMovies = async () => {
+    if (loading) return;
+
     try {
-      const { data } = await axios.get(`/movie/${category}?page=${page}`);
+      setLoading(true);
+      const { data } = await axios.get(
+        `/movie/${category}?page=${page}`
+      );
+
       if (data.results.length > 0) {
-        setmovie((prevState) => [...prevState, ...data.results]);
-        setpage(page + 1);
+        setMovies(prev => [...prev, ...data.results]);
+        setPage(prev => prev + 1);
       } else {
-        sethasMore(false);
+        setHasMore(false);
       }
-    } catch (error) {
-      console.error("Error: ", error);
+    } catch (err) {
+      console.error("Movie fetch error:", err);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const refreshHandler = () => {
-    setpage(1);
-    setmovie([]);
-    sethasMore(true);
-    GetMovie();
-  };
-
   useEffect(() => {
-    refreshHandler();
-    // eslint-disable-next-line
+    setMovies([]);
+    setPage(1);
+    setHasMore(true);
   }, [category]);
 
-  return movie.length > 0 ? (
-    <div className="w-full min-h-screen bg-[#1F1E24] flex flex-col gap-4 px-2 md:px-8 py-4">
-      {/* Header Section */}
-      <div className="w-full flex flex-col items-center mb-4 gap-3">
-        {/* Mobile: Movies centered, dropdowns below; Desktop: all in one row */}
-        <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div className="flex items-center justify-center md:justify-start w-full md:w-auto gap-2">
-            <button onClick={() => navigate(-1)} className="text-2xl text-zinc-400 hover:text-[#6556CD] focus:outline-none">
-              <i className="ri-arrow-left-line"></i>
-            </button>
-            <h1 className="text-2xl font-semibold text-zinc-400 text-center w-full md:w-auto">
-              Movies <small className="ml-2 text-sm text-zinc-500">({category})</small>
-            </h1>
-          </div>
-          <div className="flex items-center justify-center md:justify-end w-full md:w-auto gap-2">
-            {/* Desktop: Search bar with proper width - like Trending.jsx */}
-            <div className="hidden md:flex justify-center flex-1 max-w-5xl mx-60">
-              <div className="w-full max-w-lg">
-                <Topnav />
-              </div>
-            </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Dropdown 
-                title="Category" 
-                options={["popular", "top_rated", "upcoming", "now_playing"]} 
-                func={(e) => setcategory(e.target.value)} 
-              />
-            </div>
-          </div>
-        </div>
-        {/* Mobile: show search bar below header and dropdowns - like both Popular and Trending */}
-        <div className="w-full md:hidden mt-2">
+  useEffect(() => {
+    GetMovies();
+  }, [category, page === 1]);
+
+  return (
+    <div className="min-w-screen h-screen bg-[#0f1115] flex flex-col">
+      <div className="sticky top-0 z-50 bg-[#0f1115]/95 backdrop-blur border-b border-zinc-800 px-[5%] flex items-center justify-between">
+        <h1 className="flex items-center gap-3 text-2xl font-semibold text-zinc-400">
+          <i
+            onClick={() => navigate(-1)}
+            className="ri-arrow-left-line hover:text-[#6556CD] cursor-pointer"
+          />
+          Movies -<small className="text-md text-zinc-400">{category}</small>
+        </h1>
+
+        <div className="flex items-center gap-4 w-[60%]">
           <Topnav />
+          <Dropdown
+            title="Category"
+            options={[
+              "now_playing",
+              "popular",
+              "top_rated",
+              "upcoming",
+            ]}
+            value={category}
+            onChange={setCategory}
+          />
         </div>
       </div>
-      {/* Cards Section with responsive grid - like Popular.jsx */}
-      <InfiniteScroll
-        dataLength={movie.length}
-        next={GetMovie}
-        hasMore={hasMore}
-        loader={<h1>Loading...</h1>}
-        className="w-full"
+
+      <div id="movies-scroll" className="flex-1 overflow-y-auto">
+        {movies.length > 0 ? (
+          <InfiniteScroll
+            scrollableTarget="movies-scroll"
+            dataLength={movies.length}
+            next={GetMovies}
+            hasMore={hasMore}
+            loader={<Loader />}
+            scrollThreshold={0.8}
+          >
+            <Cards data={movies} title='movie' />
+          </InfiniteScroll>
+        ) : (
+          <Loader />
+        )}
+      </div>
+
+      <button
+        onClick={() =>
+          window.scrollTo({ top: 0, behavior: "smooth" })
+        }
+        className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-[#6556cd] hover:bg-[#7b6df0] flex items-center justify-center text-white shadow-lg"
       >
-        <Cards data={movie} title="movie" />
-      </InfiniteScroll>
+        <i className="ri-arrow-up-line text-lg" />
+      </button>
     </div>
-  ) : (
-    <Loading />
   );
 };
 

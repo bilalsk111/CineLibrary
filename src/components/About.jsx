@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Footer from "./Footer";
 
 const About = () => {
-  document.title = "SCSDB | About";
+  document.title = "CineLibrary | About";
   
   // const navigate = useNavigate(); // Uncomment when using with React Router
   const [activeSection, setActiveSection] = useState("overview");
@@ -45,7 +45,7 @@ const About = () => {
             onClick={() => window.history.back()} // Replace with navigate(-1) when using React Router
             className="hover:text-[#6556CD] ri-arrow-left-line cursor-pointer"
           ></i>{" "}
-          About SCSDB
+          About CineLibrary
         </h1>
         <div className="flex items-center w-[80%]">
           {/* <Topnav /> Uncomment when using with your Topnav component */}
@@ -59,7 +59,7 @@ const About = () => {
         <div className="text-center py-16 mb-12">
           <div className="relative">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[#6556CD]">
-              About SCSDB
+              About CineLibrary
             </h1>
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-[#6556CD]/10 rounded-full blur-3xl"></div>
           </div>
@@ -97,10 +97,10 @@ const About = () => {
               <div className="w-12 h-12 bg-[#6556CD] rounded-xl flex items-center justify-center text-white text-2xl mr-4">
                 🎬
               </div>
-              <h2 className="text-2xl font-bold text-white">What is SCSDB?</h2>
+              <h2 className="text-2xl font-bold text-white">What is CineLibrary?</h2>
             </div>
             <p className="text-zinc-300 mb-4 leading-relaxed">
-              SCSDB (Smart Cinema Streaming Database) is a comprehensive movie and TV show discovery platform 
+             CineLibrary (Smart Cinema Streaming Database) is a comprehensive movie and TV show discovery platform 
               that helps you explore, search, and learn about your favorite entertainment content.
             </p>
             <p className="text-zinc-300 leading-relaxed">
@@ -178,7 +178,7 @@ const About = () => {
             Built With Modern Technology
           </h3>
           <p className="text-zinc-300 mb-6 leading-relaxed">
-            SCSDB is built using cutting-edge web technologies to ensure fast performance, 
+            CineLibrary is built using cutting-edge web technologies to ensure fast performance, 
             responsive design, and an excellent user experience across all devices.
           </p>
           <div className="flex flex-wrap gap-3">

@@ -1,205 +1,235 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { asyncloadmovie, removemovie } from "../store/actions/movieActions";
-import { Link, Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
-import Loading from "./Loading";
+import { asyncloadmovie } from "../store/actions/movieActions";
+import { removemovie } from "../store/reducers/movieSlice";
+import {
+  Link,
+  Outlet,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import HorizontalCards from "./partials/HorizontalCards";
+import Loader from "./partials/Loader";
+
+/* GENRE MAP */
+const GENRES = {
+  28: "Action",
+  12: "Adventure",
+  16: "Animation",
+  35: "Comedy",
+  80: "Crime",
+  18: "Drama",
+  14: "Fantasy",
+  27: "Horror",
+  10749: "Romance",
+  878: "Sci-Fi",
+  53: "Thriller",
+};
 
 const Moviedetails = () => {
-  const { pathname } = useLocation();
+  document.title = "SCSDB | Movie Details";
+
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { id } = useParams();
-  const { info } = useSelector(state => state.movie);
   const dispatch = useDispatch();
 
+  const { info } = useSelector((state) => state.movie);
+  const [activeGenre, setActiveGenre] = useState("all");
+
+  /* FETCH MOVIE */
   useEffect(() => {
+    window.scrollTo(0, 0);
     dispatch(asyncloadmovie(id));
-    return () => {
-      dispatch(removemovie());
-    };
-  }, [id]);
+    return () => dispatch(removemovie());
+  }, [id, dispatch]);
 
-  return info ? (
-    <div 
+  /* SAFE DATA SOURCE */
+  const sourceData = useMemo(() => {
+    if (!info) return [];
+    return info.recommendations?.length
+      ? info.recommendations
+      : info.similar || [];
+  }, [info]);
+
+  /* AVAILABLE GENRES */
+  const availableGenres = useMemo(() => {
+    const set = new Set();
+    sourceData.forEach((m) =>
+      m.genre_ids?.forEach((g) => GENRES[g] && set.add(g))
+    );
+    return Array.from(set);
+  }, [sourceData]);
+
+  /* FILTERED MOVIES */
+  const filteredMovies = useMemo(() => {
+    if (activeGenre === "all") return sourceData;
+    return sourceData.filter((m) =>
+      m.genre_ids?.includes(activeGenre)
+    );
+  }, [activeGenre, sourceData]);
+
+  /* LOADING */
+  if (!info) return <Loader />;
+
+  const { detail, externalid, watchproviders, translations } = info;
+
+  return (
+    <div
+      className="w-screen min-h-screen px-[8%] pb-20 text-white overflow-y-auto"
       style={{
-        background: `linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.7),rgba(0,0,0,0.9)),url(https://image.tmdb.org/t/p/original/${info.detail.backdrop_path})`,
+        background: `linear-gradient(
+          rgba(0,0,0,.25),
+          rgba(0,0,0,.6),
+          rgba(0,0,0,.9)
+        ), url(https://image.tmdb.org/t/p/original/${detail.backdrop_path})`,
+        backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundSize: "cover"
-      }} 
-      className="relative w-full min-h-screen px-4 sm:px-6 lg:px-[10%]"
+      }}
     >
-      {/* Part1 - Navigation */}
-      <nav className="w-full h-[8vh] sm:h-[10vh] items-center text-zinc-100 flex gap-4 sm:gap-6 lg:gap-10 text-lg sm:text-xl py-4">
-        <Link 
-          onClick={() => navigate(-1)} 
-          className="hover:text-[#6556CD] ri-arrow-left-line text-2xl sm:text-xl"
+      {/* NAV */}
+      <nav className="h-[10vh] flex items-center gap-6 text-lg">
+        <i
+          onClick={() => navigate(-1)}
+          className="ri-arrow-left-line cursor-pointer hover:text-[#6556CD]"
         />
-        
-        <a target="_blank" href={info.detail.homepage} className="hover:text-[#6556CD]">
-          <i className="ri-external-link-fill text-xl sm:text-lg"></i>
-        </a>
 
-        <a 
-          target="_blank" 
-          href={`https://www.wikidata.org/wiki/${info.externalid.wikidata_id}`}
-          className="hover:text-[#6556CD]"
-        >
-          <i className="ri-earth-fill text-xl sm:text-lg"></i>
-        </a>
-       
-        <a 
-          href={`https://www.imdb.com/title/${info.externalid.imdb_id}`}
-          className="hover:text-[#6556CD] text-sm sm:text-base"
-        >
-          imdb
-        </a>
+        {detail.homepage && (
+          <a href={detail.homepage} target="_blank" rel="noreferrer">
+            <i className="ri-external-link-fill" />
+          </a>
+        )}
+
+        {externalid?.imdb_id && (
+          <a
+            href={`https://www.imdb.com/title/${externalid.imdb_id}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            IMDb
+          </a>
+        )}
       </nav>
 
-      {/* Part2 - Poster and Details */}
-      <div className="w-full flex flex-col lg:flex-row gap-6 lg:gap-0 mb-8">
-        {/* Movie Poster */}
-        <div className="flex justify-center lg:justify-start">
-          <img  
-            className="shadow-[8px_17px_38px_2px_rgba(0,0,0,.5)] h-[40vh] sm:h-[45vh] lg:h-[50vh] w-[250px] sm:w-[300px] lg:w-[800px] object-cover lg:rounded-none rounded-lg" 
-            src={`https://image.tmdb.org/t/p/original/${info.detail.poster_path || info.detail.backdrop_path}`} 
-            alt="Movie Poster" 
-          /> 
-        </div>
+      {/* HERO */}
+      <section className="flex gap-12 mt-8">
+        <img
+          className="w-[300px] rounded-xl shadow-2xl object-cover"
+          src={`https://image.tmdb.org/t/p/original/${
+            detail.poster_path || detail.backdrop_path
+          }`}
+          alt={detail.title}
+        />
 
-        {/* Movie Details */}
-        <div className="content lg:ml-[5%] text-white text-center lg:text-left"> 
-          <h1 className="text-3xl sm:text-4xl lg:text-6xl text-white font-black leading-tight">
-            {info.detail.name || 
-             info.detail.title || 
-             info.detail.original_name || 
-             info.detail.original_title}
-            <small className="block sm:inline text-lg sm:text-xl lg:text-2xl font-bold text-zinc-200 sm:ml-2 mt-2 sm:mt-0">
-              ({info.detail.release_date.split("-")[0]})
-            </small>
+        <div className="flex-1">
+          <h1 className="text-5xl font-extrabold">
+            {detail.title}
+            {detail.release_date && (
+              <span className="text-zinc-300 text-2xl ml-3">
+                ({detail.release_date.split("-")[0]})
+              </span>
+            )}
           </h1>
 
-          {/* Rating and Info */}
-          <div className="mt-4 mb-6 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-x-5">
-            <div className="flex items-center gap-4">
-              <span className="text-white text-lg sm:text-xl font-semibold w-[8vh] h-[8vh] sm:w-[6vh] sm:h-[6vh] flex justify-center rounded-full items-center bg-yellow-600">
-                {(info.detail.vote_average * 10).toFixed()}<sup>%</sup>
-              </span>
-              <h1 className="font-semibold text-xl sm:text-2xl leading-6">User Score</h1>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-sm sm:text-base">
-              <h1>{info.detail.release_date}</h1>
-              <h1 className="text-center sm:text-left">{info.detail.genres.map((g) => g.name).join(", ")}</h1>
-              <h1>{info.detail.runtime}min</h1>
-            </div>
+          <div className="flex gap-4 items-center mt-4 text-zinc-300">
+            <span className="px-4 py-2 rounded-full bg-[#6556CD] text-white font-bold">
+              ⭐ {(detail.vote_average * 10).toFixed()}%
+            </span>
+            {detail.runtime && <span>{detail.runtime} min</span>}
+            <span>{detail.genres.map((g) => g.name).join(", ")}</span>
           </div>
 
-          {/* Tagline */}
-          {info.detail.tagline && (
-            <h1 className="text-lg sm:text-xl font-semibold italic mb-4 px-4 lg:px-0">
-              {info.detail.tagline}
-            </h1>
+          {detail.tagline && (
+            <p className="italic text-zinc-300 mt-4">
+              {detail.tagline}
+            </p>
           )}
 
-          {/* Overview */}
-          <div className="mb-6">
-            <h1 className="text-lg sm:text-xl font-semibold mt-4 mb-2">Overview</h1>
-            <p className="text-sm sm:text-base leading-relaxed px-4 lg:px-0">
-              {info.detail.overview}
-            </p>
-          </div>
+          <p className="mt-6 max-w-3xl text-zinc-200">
+            {detail.overview}
+          </p>
 
-          {/* Translations */}
-          <div className="mb-6">
-            <h1 className="text-lg sm:text-xl font-semibold mt-4 mb-2">Movie Translations</h1>
-            <p className="mb-7 text-sm sm:text-base px-4 lg:px-0">
-              {info.translations.join(" , ")}
+          {translations?.length > 0 && (
+            <p className="mt-4 text-sm text-zinc-400">
+              Available in: {translations.join(", ")}
             </p>
-          </div>
+          )}
 
-          {/* Trailer Button */}
-          <div className="flex justify-center lg:justify-start">
-            <Link 
-              className="rounded-lg py-3 px-5 bg-[#6556CD] hover:bg-[#5a4bc4] transition-colors text-sm sm:text-base inline-flex items-center" 
-              to={`${pathname}/trailer`}
+          <Link
+            to={`${pathname}/trailer`}
+            className="inline-flex items-center gap-2 mt-8 px-6 py-3 bg-[#6556CD] rounded-lg font-semibold"
+          >
+            <i className="ri-play-fill text-xl" />
+            Watch Trailer
+          </Link>
+        </div>
+      </section>
+
+      {/* WATCH PROVIDERS */}
+      {watchproviders && (
+        <section className="mt-14 space-y-5">
+          {["flatrate", "rent", "buy"].map((type) =>
+            watchproviders[type] ? (
+              <div key={type} className="flex items-center gap-4">
+                <h3 className="w-[180px] capitalize">
+                  {type === "flatrate" ? "Streaming" : type}
+                </h3>
+                <div className="flex gap-3">
+                  {watchproviders[type].map((w, i) => (
+                    <img
+                      key={i}
+                      className="w-12 h-12 rounded-md"
+                      src={`https://image.tmdb.org/t/p/original/${w.logo_path}`}
+                      alt={w.provider_name}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null
+          )}
+        </section>
+      )}
+
+      {/* GENRE FILTERED RECOMMENDATIONS */}
+      <section className="mt-20">
+        <h2 className="text-3xl font-bold mb-6">
+          Recommended for You
+        </h2>
+
+        <div className="flex gap-3 flex-wrap mb-6">
+          <button
+            onClick={() => setActiveGenre("all")}
+            className={`px-4 py-2 rounded-full ${
+              activeGenre === "all"
+                ? "bg-[#6556CD]"
+                : "bg-zinc-800"
+            }`}
+          >
+            All
+          </button>
+
+          {availableGenres.map((id) => (
+            <button
+              key={id}
+              onClick={() => setActiveGenre(id)}
+              className={`px-4 py-2 rounded-full ${
+                activeGenre === id
+                  ? "bg-[#6556CD]"
+                  : "bg-zinc-800"
+              }`}
             >
-              <i className="text-lg sm:text-xl mr-2 ri-play-fill"></i>
-              Play Trailer
-            </Link>
-          </div>
-        </div>       
-      </div>
+              {GENRES[id]}
+            </button>
+          ))}
+        </div>
 
-      {/* Part3 - Available on Platforms */}
-      <div className="w-full flex flex-col gap-y-5 mt-8 lg:mt-10">
-        {info.watchproviders && info.watchproviders.buy && (
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-x-10 items-center sm:items-start text-white">
-            <h1 className="text-base sm:text-lg font-semibold min-w-fit">Available on Buy</h1>
-            <div className="flex flex-wrap justify-center sm:justify-start gap-3">
-              {info.watchproviders.buy.map((w, i) => (
-                <img 
-                  key={i}  
-                  title={w.provider_name} 
-                  className="w-[6vh] h-[6vh] sm:w-[5vh] sm:h-[5vh] object-cover rounded-md hover:scale-110 transition-transform" 
-                  src={`https://image.tmdb.org/t/p/original/${w.logo_path}`}  
-                  alt={w.provider_name}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        <HorizontalCards title="movie" data={filteredMovies} />
+      </section>
 
-        {info.watchproviders && info.watchproviders.rent && (
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-x-10 items-center sm:items-start text-white">
-            <h1 className="text-base sm:text-lg font-semibold min-w-fit">Available on Rent</h1>
-            <div className="flex flex-wrap justify-center sm:justify-start gap-3">
-              {info.watchproviders.rent.map((w, i) => (
-                <img 
-                  key={i} 
-                  title={w.provider_name} 
-                  className="w-[6vh] h-[6vh] sm:w-[5vh] sm:h-[5vh] object-cover rounded-md hover:scale-110 transition-transform" 
-                  src={`https://image.tmdb.org/t/p/original/${w.logo_path}`}  
-                  alt={w.provider_name}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {info.watchproviders && info.watchproviders.flatrate && (
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-x-10 items-center sm:items-start text-white">
-            <h1 className="text-base sm:text-lg font-semibold min-w-fit">Available on Platforms</h1>
-            <div className="flex flex-wrap justify-center sm:justify-start gap-3">
-              {info.watchproviders.flatrate.map((w, i) => (
-                <img 
-                  key={i} 
-                  title={w.provider_name} 
-                  className="w-[6vh] h-[6vh] sm:w-[5vh] sm:h-[5vh] object-cover rounded-md hover:scale-110 transition-transform" 
-                  src={`https://image.tmdb.org/t/p/original/${w.logo_path}`}  
-                  alt={w.provider_name}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Part 4 - Recommendations and Similar Stuff */}
-      <hr className="bg-zinc-500 mt-8 lg:mt-10 border-none h-[1px]" />
-      <h1 className="text-2xl sm:text-3xl mt-6 lg:mt-8 font-bold text-white text-center lg:text-left px-4 lg:px-0">
-        Recommendations & Similar Stuff
-      </h1>
-      <div className="mt-4 mb-8">
-        <HorizontalCards 
-          data={info.recommendations.length > 0 ? info.recommendations : info.similar}
-        />
-      </div>
-
-      <Outlet/>
+      <Outlet />
     </div>
-  ) : (
-    <Loading/>
   );
-}
+};
 
 export default Moviedetails;

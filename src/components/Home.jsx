@@ -5,11 +5,11 @@ import axios from "../utils/axios";
 import Header from "./partials/Header";
 import HorizontalCards from "./partials/HorizontalCards";
 import Dropdown from "./partials/Dropdown";
-import Loading from "./Loading";
 import Footer from "./Footer";
+import Loader from "./partials/Loader";
 
 const Home = () => {
-  document.title = "SCSDB | Homepage";
+  document.title = "CineLibrary | Homepage";
 
   const [wallpaper, setwallpaper] = useState(null);
   const [trending, settrending] = useState(null);
@@ -75,9 +75,8 @@ const Home = () => {
 
   if (!(wallpaper && trending)) {
     return (
-      <h1>
-        <Loading />
-      </h1>
+        <Loader />
+
     );
   }
 
@@ -151,19 +150,19 @@ const Home = () => {
         {/* Additional Content Sections */}
         <div className="p-3 md:p-5 pt-8 md:pt-10">
           <h1 className="text-2xl md:text-3xl font-semibold text-zinc-400 mb-3">
-            About SCSDB
+            About CineLibrary
           </h1>
           <div className="bg-gradient-to-r from-zinc-800/50 to-zinc-700/30 rounded-lg p-4 mb-4">
             <div className="text-zinc-300 text-sm md:text-base leading-relaxed space-y-4 break-words">
               <p>
-                Welcome to SCSDB (Screen Cinema Database), your ultimate destination for 
+                Welcome to CineLibrary (Screen Cinema Database), your ultimate destination for 
                 discovering and exploring the world of movies and television. Our platform 
                 brings together comprehensive information about the latest releases, timeless 
                 classics, and everything in between.
               </p>
               <p className="text-zinc-400 text-xs md:text-sm">
                 Whether you're looking for trending content, critically acclaimed masterpieces, 
-                or upcoming releases, SCSDB provides you with detailed information, ratings, 
+                or upcoming releases, CineLibrary provides you with detailed information, ratings, 
                 and insights to help you make informed viewing decisions. Our curated collections 
                 ensure you never miss out on the content that matters most to you.
               </p>
@@ -305,7 +304,7 @@ const Home = () => {
           <div className="border-t border-zinc-700 pt-6">
             <div className="text-center text-zinc-500 text-sm leading-relaxed break-words">
               <p className="mb-2">
-                © 2025 SCSDB - Your Ultimate Entertainment Database
+                © 2025 CineLibrary - Your Ultimate Entertainment Database
               </p>
               <p>
                 Discover, explore, and enjoy the best in movies and television. 

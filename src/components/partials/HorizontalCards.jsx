@@ -1,133 +1,138 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useRef } from "react";
+import { Link } from "react-router-dom";
+import Dropdown from "./Dropdown";
 
-const HorizontalCards = ({ data }) => {
-  return (
-    <div className="w-full p-3 md:p-5">
-      <div className="w-full flex overflow-y-hidden overflow-x-auto gap-4 pb-4">
-        {data.map((item, index) => (
-          <CardItem key={item.id || index} item={item} />
-        ))}
-      </div>
-    </div>
-  );
-};
+const HorizontalCards = ({ data = [], title, category, onCategoryChange }) => {
+  const sliderRef = useRef(null);
 
-const CardItem = ({ item }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  
-  // Maximum characters to show when collapsed
-  const maxLength = 150;
-  
-  // Get overview text (handle both movie and TV show data)
-  const overview = item.overview || '';
-  
-  // Check if text needs truncation
-  const needsTruncation = overview.length > maxLength;
-  
-  // Get display text based on expanded state
-  const displayText = isExpanded || !needsTruncation 
-    ? overview 
-    : overview.slice(0, maxLength) + '...';
+  if (!data.length) return null;
 
-  // Get title (handle both movie and TV show data)
-  const title = item.title || item.name || 'Unknown Title';
-  
-  // Get image URL
-  const imageUrl = item.poster_path || item.backdrop_path 
-    ? `https://image.tmdb.org/t/p/w500${item.poster_path || item.backdrop_path}`
-    : '/api/placeholder/300/450';
+  const handleWheel = (e) => {
+    sliderRef.current.scrollLeft += e.deltaY;
+  };
 
-  // Get media_type for correct details link
-  const mediaType = item.media_type || (item.title ? 'movie' : 'tv');
+  const scroll = (direction) => {
+    sliderRef.current.scrollBy({
+      left: direction === "left" ? -420 : 420,
+      behavior: "smooth",
+    });
+  };
 
   return (
-    <div className="min-w-[280px] md:min-w-[320px] bg-zinc-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group">
-      {/* Image section */}
-      <div className="relative h-40 md:h-48 overflow-hidden">
-        <img 
-          src={imageUrl}
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => {
-            e.target.src = '/api/placeholder/300/450';
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-        
-        {/* Rating badge */}
-        {item.vote_average && (
-          <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1">
-            <span className="text-yellow-400 text-xs font-semibold">
-              ⭐ {item.vote_average.toFixed(1)}
-            </span>
-          </div>
-        )}
-      </div>
-      
-      {/* Content section with controlled height */}
-      <div className="p-4">
-        {/* Title with consistent height */}
-        <h3 className="text-lg font-semibold text-white mb-1 line-clamp-2 min-h-[3.5rem] leading-tight">
-          {title}
-        </h3>
-        
-        {/* Release date */}
-        {(item.release_date || item.first_air_date) && (
-          <p className="text-zinc-500 text-sm mb-3">
-            {new Date(item.release_date || item.first_air_date).getFullYear()}
-          </p>
-        )}
-        
-        {/* Description section with fixed structure */}
-        <div className="min-h-[100px] flex flex-col">
-          {/* Description text */}
-          <div className={`text-zinc-400 text-sm leading-relaxed mb-3 transition-all duration-300 ${
-            isExpanded ? 'max-h-none' : 'max-h-[4.5rem] overflow-hidden'
-          }`}>
-            <p className="break-words hyphens-auto">
-              {displayText || 'No description available.'}
-            </p>
-          </div>
-          
-          {/* Action buttons container */}
-          <div className="flex items-center justify-between mt-auto">
-            {/* More/Less button */}
-            {needsTruncation && (
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors duration-200 flex items-center gap-1"
-              >
-                {isExpanded ? (
-                  <>
-                    <span>Show less</span>
-                    <svg className="w-3 h-3 transform rotate-180" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </>
-                ) : (
-                  <>
-                    <span>More</span>
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </>
-                )}
-              </button>
-            )}
-            
-            {/* View Details Link */}
-            <Link
-              to={`/${mediaType}/details/${item.id}`} 
-              className="bg-zinc-700 hover:bg-zinc-600 text-white text-xs px-3 py-1.5 rounded-full transition-colors duration-200 flex items-center gap-1"
-            >
-              <span>View Details</span>
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
+    <div className="w-full px-8 relative mt-10 group">
+      {/* HEADER */}
+      {title && (
+        <div className="w-full flex items-center justify-between mb-6">
+          <h2 className="text-white text-2xl font-semibold tracking-wide">
+            {title}
+          </h2>
+
+          {category && onCategoryChange && (
+            <Dropdown
+              value={category}
+              options={["all", "movie", "tv"]}
+              onChange={onCategoryChange}
+              hidden={false}
+            />
+          )}
         </div>
+      )}
+
+      {/* LEFT BUTTON */}
+      <button
+        onClick={() => scroll("left")}
+        className="
+          absolute left-2 top-1/2 -translate-y-1/2 z-20
+          w-11 h-11 rounded-full
+          bg-black/70 text-white
+          flex items-center justify-center
+          opacity-0 group-hover:opacity-100
+          transition-all duration-300
+          hover:scale-110
+        "
+      >
+        ‹
+      </button>
+
+      {/* RIGHT BUTTON */}
+      <button
+        onClick={() => scroll("right")}
+        className="
+          absolute right-2 top-1/2 -translate-y-1/2 z-20
+          w-11 h-11 rounded-full
+          bg-black/70 text-white
+          flex items-center justify-center
+          opacity-0 group-hover:opacity-100
+          transition-all duration-300
+          hover:scale-110
+        "
+      >
+        ›
+      </button>
+
+      {/* CARDS */}
+      <div
+        ref={sliderRef}
+        onWheel={handleWheel}
+        className="
+         flex gap-6 overflow-x-auto pb-8
+    scroll-smooth scrollbar-hide
+        "
+      >
+        {data.map((d) => {
+          const image =
+            d.backdrop_path || d.poster_path
+              ? `https://image.tmdb.org/t/p/w500${
+                  d.backdrop_path || d.poster_path
+                }`
+              : "/no-image.png";
+
+          return (
+            <Link
+              key={d.id}
+              to={`/${d.media_type || "movie"}/details/${d.id}`}
+              className="
+                relative min-w-[230px] h-[340px]
+                rounded-xl overflow-hidden
+                bg-zinc-900 shadow-lg"
+            >
+              {/* IMAGE */}
+              <img
+                src={image}
+                alt={d.title || d.name}
+                loading="lazy"
+                className="
+                  w-full h-full object-cover object-center"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+              <span className="
+                absolute top-3 left-3
+                px-2 py-0.5 text-xs font-semibold
+                bg-[#6556cd] text-white rounded
+              ">
+                {d.media_type?.toUpperCase() || "MOVIE"}
+              </span>
+
+              {/* CONTENT */}
+              <div className="absolute bottom-0 p-4 text-white">
+                <h3 className="text-sm font-semibold line-clamp-2">
+                  {d.title || d.name}
+                </h3>
+
+                <p className="text-xs text-zinc-300 mt-1">
+                  {d.release_date ||
+                    d.first_air_date ||
+                    "No Date"}
+                </p>
+
+                <p className="text-xs text-zinc-400 mt-2 line-clamp-2">
+                  {d.overview}
+                </p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

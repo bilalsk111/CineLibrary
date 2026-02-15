@@ -1,88 +1,80 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Topnav from "./partials/Topnav";
-import Dropdown from "./partials/Dropdown";
+import React,{ useEffect, useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
 import axios from "../utils/axios";
 import Cards from "./partials/Cards";
-import Loading from "./Loading";
-import InfiniteScroll from 'react-infinite-scroll-component';
+import Loader from "../components/partials/Loader";
+import Topnav from "./partials/Topnav";
+import { useNavigate } from "react-router-dom";
 
 const Trending = () => {
-  document.title = "SCSDB | Trending";
+  document.title = "CineLibrary | Trending"
   const navigate = useNavigate();
-  const [category, setcategory] = useState("all");
-  const [duration, setduration] = useState("day");
-  const [trending, settrending] = useState([]);
-  const [page, setpage] = useState(1);
-  const [hasMore, sethasMore] = useState(true);
 
-  const GetTrending = async () => {
-    try {
-      const { data } = await axios.get(`/trending/${category}/${duration}?page=${page}`);
-      if (data.results.length > 0) {
-        settrending((prevState) => [...prevState, ...data.results]);
-        setpage(page + 1);
-      } else {
-        sethasMore(false);
-      }
-    } catch (error) {
-      console.error("Error: ", error);
+  const [mediaType, setMediaType] = useState("all");
+  const [timeWindow, setTimeWindow] = useState("day");
+  const [data, setData] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchTrending = async () => {
+    const res = await axios.get(
+      `/trending/${mediaType}/${timeWindow}?page=${page}`
+    );
+
+    if (res.data.results.length === 0) {
+      setHasMore(false);
+      return;
     }
+
+    setData((prev) => [...prev, ...res.data.results]);
+    setPage((p) => p + 1);
   };
 
-  const refreshHandler = () => {
-    setpage(1);
-    settrending([]);
-    sethasMore(true);
-    GetTrending();
-  };
-
+  // RESET ON FILTER CHANGE
   useEffect(() => {
-    refreshHandler();
-    // eslint-disable-next-line
-  }, [category, duration]);
+    setData([]);
+    setPage(1);
+    setHasMore(true);
+  }, [mediaType, timeWindow]);
 
-  return trending.length > 0 ? (
-    <div className="w-full min-h-screen bg-[#1F1E24] flex flex-col gap-4 px-2 md:px-8 py-4">
-      {/* Header Section */}
-      <div className="w-full flex flex-col items-center mb-4 gap-3">
-        {/* Mobile: Trending centered, dropdowns below; Desktop: all in one row */}
-        <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div className="flex items-center justify-center md:justify-start w-full md:w-auto gap-2">
-            <button onClick={() => navigate(-1)} className="text-2xl text-zinc-400 hover:text-[#6556CD] focus:outline-none">
-              <i className="ri-arrow-left-line"></i>
-            </button>
-            <h1 className="text-2xl font-semibold text-zinc-400 text-center w-full md:w-auto">Trending</h1>
-          </div>
-          <div className="flex items-center justify-center md:justify-end w-full md:w-auto gap-2">
-            {/* Search bar with proper width on desktop */}
-            <div className="hidden md:block flex-1 max-w-md min-w-[400px] mr-3">
-              <Topnav />
-            </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Dropdown title="Category" options={["movie", "tv", "all"]} func={(e) => setcategory(e.target.value)} />
-              <Dropdown title="Duration" options={["week", "day"]} func={(e) => setduration(e.target.value)} />
-            </div>
-          </div>
-        </div>
-        {/* Mobile: show search bar below header and dropdowns */}
-        <div className="w-full md:hidden mt-2">
-          <Topnav />
-        </div>
+  return (
+    <div className="w-full h-screen bg-[#0f1115] flex flex-col">
+      {/* HEADER */}
+    <div className="sticky top-0 z-50 bg-[#0f1115]/95 backdrop-blur px-6 py-4 flex justify-around  gap-25 overflow-visible">
+  <h1 className="flex items-center gap-3 text-xl">
+    <i
+      onClick={() => navigate(-1)}
+      className="ri-arrow-left-line cursor-pointer"
+    />
+    Trending - {mediaType} / {timeWindow}
+  </h1>
+
+  <div className="flex items-center ml-25 gap-5 flex-1 w-[60%]">
+    <Topnav
+      showFilters
+      onCategoryChange={setMediaType}
+      onDurationChange={setTimeWindow}
+      category={mediaType}
+      duration={timeWindow}
+    />
+    
+  </div>
+</div>
+
+
+      {/* SCROLL */}
+      <div id="page-scroll" className="flex-1 overflow-y-auto">
+        <InfiniteScroll
+          dataLength={data.length}
+          next={fetchTrending}
+          hasMore={hasMore}
+          loader={<Loader />}
+          scrollableTarget="page-scroll"
+        >
+          <Cards data={data} title="trending" />
+        </InfiniteScroll>
       </div>
-      {/* Cards Section */}
-      <InfiniteScroll
-        dataLength={trending.length}
-        next={GetTrending}
-        hasMore={hasMore}
-        loader={<h1>Loading...</h1>}
-        className="w-full"
-      >
-        <Cards data={trending} title={category} />
-      </InfiniteScroll>
     </div>
-  ) : (
-    <Loading />
   );
 };
 

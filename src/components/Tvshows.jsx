@@ -3,13 +3,13 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../utils/axios";
 import InfiniteScroll from 'react-infinite-scroll-component';
-import Loading from "./Loading";
 import Cards from "./partials/Cards";
 import Dropdown from "./partials/Dropdown";
 import Topnav from "./partials/Topnav";
+import Loader from "./partials/Loader";
 
 const Tvshows = () => {
-  document.title = "SCSDB | TV Shows";
+  document.title = "CineLibrary | TV Shows";
   
   const navigate = useNavigate();
   const [category, setcategory] = useState("airing_today");
@@ -45,10 +45,10 @@ const Tvshows = () => {
   }, [category]);
 
   return tv.length > 0 ? (
-    <div className="w-full min-h-screen bg-[#1F1E24] px-4 sm:px-6 lg:px-8">
+    <div className="w-full min-h-screen bg-[#161616]">
       
       {/* Header Section */}
-      <div className="w-full py-4 sm:py-6">
+      <div className="w-full bg-zinc-900 fixed z-20 px-5">
         
         {/* Mobile: TV Shows centered, dropdowns below; Desktop: all in one row */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-0">
@@ -67,14 +67,14 @@ const Tvshows = () => {
 
           <div className="hidden lg:flex lg:items-center lg:gap-4 lg:flex-1 lg:justify-center">
             {/* Search bar with proper width on desktop - centered */}
-            <div className="flex-1 max-w-md">
+            <div className="flex-1 w-[60%]">
               <div className="w-full">
                 <Topnav />
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 lg:flex-1 lg:justify-end">
+          <div className="flex items-center gap-3 lg:justify-end">
             <Dropdown 
               title="Category" 
               options={["on_the_air", "popular", "top_rated", "airing_today"]} 
@@ -96,15 +96,15 @@ const Tvshows = () => {
         dataLength={tv.length}
         next={GetTv}
         hasMore={hasMore}
-        loader={<Loading />}
-        className="w-full"
+        loader={<Loader />}
+        className="w-full mt-25"
       >
         <Cards data={tv} title="tv" />
       </InfiniteScroll>
       
     </div>
   ) : (
-    <Loading />
+    <Loader />
   );
 };
 

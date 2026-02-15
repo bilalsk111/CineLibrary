@@ -1,7 +1,7 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Home from "./components/Home";
-import Loading from "./components/Loading";
+import Loading from "./components/partials/Loader";
 import Trending from "./components/Trending";
 import Popular from "./components/Popular";
 import Movie from "./components/Movie";
@@ -14,13 +14,11 @@ import Trailer from "./components/partials/Trailer";
 import NotFound from "./components/NotFound";
 import About from "./components/About";
 import ContactUs from "./components/ContactUs";
-import ReptileCursor from "./components/ReptileCursor";
 
 
 function App(){
   return(
-    <div className="bg-[#1F1E24] flex w-full h-full">
-      <ReptileCursor />
+    <div className="bg-[#0f1115] flex w-full min-h-screen text-white">
       <Routes>
         <Route path="/" element={<Home/>}/>
         <Route path="/trending" element={<Trending/>}/>

@@ -16,7 +16,7 @@ const Footer = () => {
             <h2 className="logo-text">
               THE
               <br />
-              <span className="logo-highlight">SCSDB</span>
+              <span className="logo-highlight">CineLibrary</span>
             </h2>
           </div>
           <button className="join-button">
@@ -37,7 +37,7 @@ const Footer = () => {
           <div className="footer-column">
             <h3 className="footer-heading">THE BASICS</h3>
             <ul className="footer-list">
-              <li><a href="/about">About SCSDB</a></li>
+              <li><a href="/about">About CineLibrary</a></li>
               <li><a href="/contactus">Contact Us</a></li>
               <li><a href="/support">Support Forums</a></li>
               <li><a href="/api">API Documentation</a></li>

@@ -1,88 +1,102 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import InfiniteScroll from "react-infinite-scroll-component";
+import axios from "../utils/axios";
 import Topnav from "./partials/Topnav";
 import Dropdown from "./partials/Dropdown";
-import axios from "../utils/axios";
 import Cards from "./partials/Cards";
-import Loading from "./Loading";
-import InfiniteScroll from 'react-infinite-scroll-component';
-
+import Loader from "./partials/loader";
+import React,{ useEffect, useState } from "react";
 const Popular = () => {
-  document.title = "SCSDB | Popular";
-  const navigate = useNavigate();
-  const [category, setcategory] = useState("movie");
-  const [popular, setpopular] = useState([]);
-  const [page, setpage] = useState(1);
-  const [hasMore, sethasMore] = useState(true);
+  document.title = "CineLibrary | Popular";
 
+  const navigate = useNavigate();
+
+  const [category, setCategory] = useState("movie");
+  const [popular, setPopular] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch popular items
   const GetPopular = async () => {
     try {
-      const { data } = await axios.get(`${category}/popular?page=${page}`);
-      if (data.results.length > 0) {
-        setpopular((prevState) => [...prevState, ...data.results]);
-        setpage(page + 1);
+      const { data } = await axios.get(`/${category}/popular?page=${page}`);
+      if (data.results?.length > 0) {
+        setPopular((prev) => [...prev, ...data.results]);
+        setPage((prev) => prev + 1);
       } else {
-        sethasMore(false);
+        setHasMore(false);
       }
-    } catch (error) {
-      console.error("Error: ", error);
+    } catch (err) {
+      console.error("Popular fetch error:", err);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Refresh when category changes
   const refreshHandler = () => {
-    setpage(1);
-    setpopular([]);
-    sethasMore(true);
-    GetPopular();
+    setPopular([]);
+    setPage(1);
+    setHasMore(true);
+    setLoading(true);
   };
 
   useEffect(() => {
     refreshHandler();
-    // eslint-disable-next-line
   }, [category]);
 
-  return popular.length > 0 ? (
-    <div className="w-full min-h-screen bg-[#1F1E24] flex flex-col gap-4 px-2 md:px-8 py-4">
-      {/* Header Section */}
-      <div className="w-full flex flex-col items-center mb-4 gap-3">
-        {/* Mobile: Popular centered, dropdowns below; Desktop: all in one row */}
-        <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div className="flex items-center justify-center md:justify-start w-full md:w-auto gap-2">
-            <button onClick={() => navigate(-1)} className="text-2xl text-zinc-400 hover:text-[#6556CD] focus:outline-none">
-              <i className="ri-arrow-left-line"></i>
-            </button>
-            <h1 className="text-2xl font-semibold text-zinc-400 text-center w-full md:w-auto">Popular</h1>
-          </div>
-          <div className="flex items-center justify-center md:justify-end w-full md:w-auto gap-2">
-            {/* Search bar with proper width on desktop - centered */}
-            <div className="hidden md:flex justify-center flex-1 max-w-5xl mx-60">
-              <div className="w-full max-w-lg">
-                <Topnav />
-              </div>
-            </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Dropdown title="Category" options={["movie", "tv"]} func={(e) => setcategory(e.target.value)} />
-            </div>
-          </div>
-        </div>
-        {/* Mobile: show search bar below header and dropdowns */}
-        <div className="w-full md:hidden mt-2">
+  useEffect(() => {
+   GetPopular();
+  }, [category, page === 1]);
+
+  return (
+    <div className="min-w-screen  h-screen bg-[#0f1115] flex flex-col">
+      {/* Header */}
+      <div className="sticky top-0 z-50 bg-[#0f1115]/95 backdrop-blur border-b border-zinc-800 px-[5%] py-4 flex items-center justify-between">
+        <h1 className="flex items-center gap-3 text-2xl font-semibold text-zinc-400">
+          <i
+            onClick={() => navigate(-1)}
+            className="ri-arrow-left-line hover:text-[#6556CD] cursor-pointer"
+          />
+          Popular - <small className="text-md text-zinc-400">{category}</small>
+        </h1>
+
+        <div className="flex items-center gap-4 w-[80%]">
           <Topnav />
+          <Dropdown
+            title="Category"
+            options={["movie", "tv"]}
+            value={category}
+             onChange={setCategory}
+          />
         </div>
       </div>
-      {/* Cards Section */}
-      <InfiniteScroll
-        dataLength={popular.length}
-        next={GetPopular}
-        hasMore={hasMore}
-        loader={<h1>Loading...</h1>}
-        className="w-full"
+
+      <div id="popular-scroll" className="flex-1 overflow-y-auto">
+        {popular.length > 0 ? (
+          <InfiniteScroll
+            scrollableTarget="popular-scroll"
+            dataLength={popular.length}
+            next={GetPopular}
+            hasMore={hasMore}
+            loader={<Loader />}
+            scrollThreshold={0.8}
+          >
+            <Cards data={popular} title={category} />
+          </InfiniteScroll>
+        ) : (
+          <Loader />
+        )}
+      </div>
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-[#6556cd] hover:bg-[#7b6df0] flex items-center justify-center text-white shadow-lg"
       >
-        <Cards data={popular} title={category} />
-      </InfiniteScroll>
+        <i className="ri-arrow-up-line text-lg" />
+      </button>
     </div>
-  ) : (
-    <Loading />
   );
 };
 

@@ -60,18 +60,18 @@ const ContactUs = () => {
           ></i>{" "}
           Contact Us
         </h1>
-        <div className="flex items-center w-[80%]">
+        {/* <div className="flex items-center w-[80%]">
           <Topnav />
-        </div>
+        </div> */}
       </div>
 
       {/* Contact Content */}
-      <div className="w-full max-w-4xl mx-auto px-5">
+      <div className="w-full max-w-4xl mx-auto px-5 py-3 bg-[#1d1d1daf] rounded-xl">
         {/* About Section */}
         <div className="mb-12">
           <h2 className="text-3xl font-bold text-zinc-300 mb-6">Get in Touch</h2>
           <p className="text-zinc-400 text-lg leading-relaxed mb-6">
-            Welcome to SCSDB - your ultimate destination for movies and TV shows database. 
+            Welcome to CineLibrary - your ultimate destination for movies and TV shows database. 
             We're powered by The Movie Database (TMDB) API to bring you the most comprehensive 
             and up-to-date entertainment information.
           </p>
@@ -145,7 +145,7 @@ const ContactUs = () => {
                   value={formData.subject}
                   onChange={handleInputChange}
                   required
-                  className="w-full p-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 
+                  className="w-full h-12 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 
                            focus:outline-none focus:border-[#6556CD] focus:ring-1 focus:ring-[#6556CD] 
                            transition-colors"
                 >
@@ -251,9 +251,9 @@ const ContactUs = () => {
                   </p>
                 </div>
                 <div>
-                  <h4 className="text-zinc-300 font-medium mb-1">Is SCSDB free to use?</h4>
+                  <h4 className="text-zinc-300 font-medium mb-1">Is CineLibraryfree to use?</h4>
                   <p className="text-zinc-400 text-sm">
-                    Yes! SCSDB is completely free to use for all movie and TV show enthusiasts.
+                    Yes! CineLibrary is completely free to use for all movie and TV show enthusiasts.
                   </p>
                 </div>
               </div>

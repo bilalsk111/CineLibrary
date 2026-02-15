@@ -4,16 +4,7 @@
 secondary- #6556CD */
 
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
-}
-::-webkit-scrollbar-thumb {
-  background: #181819;
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #827bb2;
-  border-radius: 10px;
+display: none;
 }
 
 select {

@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../utils/axios";
 import InfiniteScroll from 'react-infinite-scroll-component';
-import Loading from "./Loading";
 import Cards from "./partials/Cards";
 import Dropdown from "./partials/Dropdown";
 import Topnav from "./partials/Topnav";
+import Loader from "./partials/Loader";
 
 const People = () => {
   document.title = "SCSDB | People";
@@ -58,8 +58,8 @@ const People = () => {
           </div>
           <div className="flex items-center justify-center md:justify-end w-full md:w-auto gap-2">
             {/* Search bar with proper width on desktop - centered */}
-            <div className="hidden md:flex justify-center flex-1 max-w-5xl mx-60">
-              <div className="w-full max-w-lg">
+            <div className="hidden md:flex justify-center flex-1 max-w-5xl">
+              <div className="w-[80vw]">
                 <Topnav />
               </div>
             </div>
@@ -85,7 +85,7 @@ const People = () => {
       </InfiniteScroll>
     </div>
   ) : (
-    <Loading />
+    <Loader />
   );
 };
 
